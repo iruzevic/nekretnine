@@ -1,0 +1,550 @@
+<html>
+	<head>
+		<style>
+			:root {
+				--color-primary: #29A3A3;
+				--color-primary-dark: #2B7373;
+				--color-alto: #EAEAEA;
+				--color-mercury: #E2E2E2;
+				--color-white: #FFFFFF;
+			}
+			::before,
+			::after {
+				box-sizing: border-box;
+			}
+
+			html {
+				line-height: 1.15; /* 1 */
+				-webkit-text-size-adjust: 100%; /* 2 */
+				-moz-tab-size: 4; /* 3 */
+				tab-size: 4; /* 3 */
+				padding: 0;
+				margin: 0;
+			}
+
+			body {
+				margin: 0; /* 1 */
+				padding: 0;
+				font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; /* 2 */
+			}
+
+			table {
+				text-indent: 0; /* 1 */
+				border-color: inherit; /* 2 */
+			}
+
+			button,
+			input,
+			optgroup,
+			select,
+			textarea {
+				font-family: inherit; /* 1 */
+				font-size: 100%; /* 1 */
+				line-height: 1.15; /* 1 */
+				margin: 0; /* 2 */
+			}
+
+			button,
+			[type=button],
+			[type=reset],
+			[type=submit] {
+				-webkit-appearance: button;
+			}
+
+			body {
+				margin: 0 auto;
+			}
+
+			.intro {
+				padding: 20px;
+				display: grid;
+				grid-gap: 20px;
+				grid-template-columns: 1fr 300px;
+				background-color: var(--color-alto);
+			}
+
+			.input {
+				width: 100%;
+				border: 1px solid var(--color-mercury);
+				padding: 10px;
+				border-radius: 0;
+				resize: vertical;
+				min-height: 300px;
+			}
+
+			input:focus {
+				outline: none;
+			}
+
+			button {
+				margin-top: 20px;
+				border: none;
+				background-color: var(--color-primary);
+				height: 40px;
+				color: var(--color-white);
+				cursor: pointer;
+				width: 100%;
+			}
+
+			button:hover {
+				background-color: var(--color-primary-dark);
+			}
+
+			.output {
+				margin-top: 20px;
+				width: 100%;
+				text-align: left;
+				margin: 0 auto;
+				padding: 20px;
+			}
+
+			th {
+			}
+
+			td,
+			th {
+				white-space: nowrap;
+				padding: 10px;
+				border-bottom: 1px solid var(--color-mercury);;
+			}
+
+			td br,
+			th br {
+				display: none;
+			}
+
+			.output-wrap {
+				overflow-x: auto;
+			}
+
+			ul {
+				padding-left: 20px;
+				margin: 0;
+			}
+
+			h3 {
+				margin: 0 0 10px 0;
+			}
+
+			li {
+				margin-bottom: 3px;
+				padding-left: 0;
+			}
+
+			a {
+				color: var(--color-primary);
+			}
+
+			a:hover {
+				color: var(--color-primary-dark);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="intro">
+			<form class="js-form intro-form">
+				<textarea class="js-input input" placeholder="https://www.remax-centarnekretnina.com/kuca/kuca-146-m2-tlocrtno-stari-laz"></textarea>
+				<button>Search</button>
+			</form>
+			<div class="intro-list">
+				<h3>Popis podržanih stranica:</h3>
+				<ul class="js-intro-list"></ul>
+			</div>
+		</div>
+		<div class="output-wrap">
+		<table class="output">
+			<thead>
+				<tr>
+					<th>Naslov</th>
+					<th>Cijena €</th>
+					<th>Površina m2</th>
+					<th>Okućnica m2</th>
+					<th>Lokacija</th>
+					<th>Kod</th>
+					<th>Agencija</th>
+					<th>Link</th>
+				</tr>
+			</thead>
+			<tbody class="js-output">
+			</tbody>
+		</table>
+		</div>
+	</body>
+	<script>
+		const config = [
+			{
+				// OK.
+				key: 'remax',
+				name: 'Remax',
+				link: 'https://www.remax-centarnekretnina.com/',
+				selectors: [
+					'.listings_more_title',
+					'.listings_more_details_price .value strong',
+					'.listings_more_details_square_size .value',
+					'.listings_more_details_plot_square_size .value',
+					'.listings_more_details_location .value a',
+					'.listings_more_details_id_code .value',
+				],
+			},
+			{
+				// OK.
+				key: 'neprom',
+				name: 'Neprom',
+				link: 'https://www.neprom.com/',
+				selectors: [
+					'.listings_more_title',
+					'.listings_more_details_price .value strong',
+					'.listings_more_details_square_size .value',
+					'.listings_more_details_plot_square_size .value',
+					'.listings_more_details_location .value a',
+					'.listings_more_details_id_code .value',
+				],
+			},
+			{
+				// OK.
+				key: 'dogma',
+				name: 'Dogma nekretnine',
+				link: 'https://dogma-nekretnine.com/',
+				selectors: [
+					'.listings_more_title',
+					'.listings_more_details_price .value strong',
+					'.listings_more_details_square_size .value',
+					'.listings_more_details_plot_square_size .value',
+					'.listings_more_details_location .value a',
+					'.listings_more_details_id_code .value',
+				],
+			},
+			{
+				// OK.
+				key: 'primat',
+				name: 'Primat nekretnine',
+				link: 'http://www.primat-nekretnine.hr/',
+				selectors: [
+					'.description h1',
+					'.mainPrice',
+					'.realestateDetialedInfo',
+					'.realestateDetialedInfo',
+					'.realestateDetialedInfo',
+					'.object-id',
+				],
+			},
+			{
+				// OK.
+				key: 'pilard',
+				name: 'Pilard nekretnine',
+				link: 'https://www.pilard-nekretnine.com/',
+				selectors: [
+					'.nd_data h2',
+					'#nd_price strong',
+					'',
+					'',
+					'#nd_loc',
+					'#nd_price',
+				],
+			},
+			{
+				// OK.
+				key: 'njuskalo',
+				name: 'Njuškalo',
+				link: 'https://www.njuskalo.hr/',
+				selectors: [
+					'.ClassifiedDetailSummary-title',
+					'.ClassifiedDetailSummary-priceDomestic',
+					'.ClassifiedDetailBasicDetails-list',
+					'.ClassifiedDetailBasicDetails-list',
+					'.ClassifiedDetailBasicDetails-list',
+					'.ClassifiedDetailSummary-adCode',
+				],
+			},
+			{
+				// OK.
+				key: 'index',
+				name: 'Index',
+				link: 'https://www.index.hr/',
+				selectors: [
+					'#bread li a[data-last="true"]',
+					'.price span',
+					'.features_list ul',
+					'',
+					'.features_list ul',
+					'.published strong',
+				],
+			},
+			{
+				key: 'metropola',
+				name: 'Metropola',
+				link: 'https://metropola.hr/',
+				selectors: [
+					'.nekretnina__heading',
+					'.nekretnina__price',
+					'',
+					'',
+					'',
+					'.nekretnina__id',
+				],
+			},
+		];
+
+		const output = document.querySelector('.js-output');
+		const form = document.querySelector('.js-form');
+		const input = document.querySelector('.js-input');
+		const introList = document.querySelector('.js-intro-list');
+
+		populateList();
+		getItem();
+
+		function populateList() {
+			config.forEach((element) => {
+				introList.insertAdjacentHTML('beforeend', `<li><a target="_blank" href="${element.link}">${element.name}</a></li>`);
+			});
+		}
+		
+		function clearSize(element) {
+			let item = element;
+
+			item = item.replace('m²', '');
+			item = item.replace('.', '');
+			item = parseFloat(item).toFixed(2);
+
+			return item;
+		}
+
+		function clearPrice(element) {
+			let item = element;
+
+			item = item.replace('.', '');
+			item = item.replace(' €', '');
+			item = item.replace('Cijena: ', '');
+			item = item.replace(' eura', '');
+			item = item.split(' ')[0];
+			item = parseFloat(item).toFixed(2);
+
+			return item;
+		}
+
+		function getOutputItem(doc, url, config) {
+			const {
+				key,
+				name,
+				selectors,
+			} = config;
+
+			const output = [];
+
+			selectors.forEach((selector, index) => {
+				if (!selector) {
+					output.push('-');
+				} else {
+					let elements = doc.querySelectorAll(selector);
+					let element = doc.querySelector(selector);
+					let item = element?.innerText;
+
+					if (item) {
+						item = item.trim();
+
+						switch (key) {
+							case 'remax':
+							case 'neprom':
+							case 'dogma':
+								if (index === 1) {
+									item = clearPrice(item);
+								}
+
+								if (index === 2) {
+									item = clearSize(item);
+								}
+
+								if (index === 3) {
+									item = clearSize(item);
+								}
+								break;
+							case 'primat':
+								if (index === 1) {
+									item = clearPrice(item);
+								}
+
+								if (index === 2) {
+									const search = [...element.children].find((inner) => inner.firstElementChild.innerText.trim() === 'Površina');
+
+									if (search) {
+										item = search.lastElementChild.innerText;
+										item = clearSize(item);
+									} else {
+										item = '-';
+									}
+								}
+
+								if (index === 3) {
+									const search = [...element.children].find((inner) => inner.firstElementChild.innerText.trim() === 'Površina okućnice');
+
+									if (search) {
+										item = search.lastElementChild.innerText;
+										item = clearSize(item);
+									} else {
+										item = '-';
+									}
+								}
+
+								if (index === 4) {
+									const search = [...element.children].find((inner) => inner.firstElementChild.innerText.trim() === 'Šira lokacija');
+
+									if (search) {
+										item = search.lastElementChild.innerText;
+									} else {
+										item = '-';
+									}
+								}
+
+								if (index === 5) {
+									item = item.replace('ID: ', '');
+								}
+
+								break;
+							case 'pilard':
+								if (index === 1) {
+									item = clearPrice(item);
+								}
+
+								if (index === 5) {
+									item = element.nextElementSibling.innerText;
+									item = item.trim().replace('Oznaka nekretnine: ', '');
+								}
+								break;
+							case 'njuskalo':
+								if (index === 1) {
+									item = clearPrice(item);
+								}
+
+								if (index === 2) {
+									const search = [...element.children].findIndex((inner) => inner.innerText.trim() === 'Površina');
+
+									if (search >= 0) {
+										item = element.children[search+1].innerText;
+										item = clearSize(item);
+									} else {
+										item = '-';
+									}
+								}
+
+								if (index === 3) {
+									const search = [...element.children].findIndex((inner) => inner.innerText.trim() === 'Površina okućnice');
+
+									if (search >= 0) {
+										item = element.children[search+1].innerText;
+										item = clearSize(item);
+									} else {
+										item = '-';
+									}
+								}
+
+								if (index === 4) {
+									const search = [...element.children].findIndex((inner) => inner.innerText.trim() === 'Lokacija');
+
+									if (search >= 0) {
+										item = element.children[search+1].innerText;
+									} else {
+										item = '-';
+									}
+								}
+
+								if (index === 5) {
+									item = item.replace('Šifra oglasa: ', '');
+								}
+								break;
+							case 'index':
+								if (index === 1) {
+									item = clearPrice(item);
+								}
+
+								if (index === 2) {
+									const search = [...elements].find((inner) => inner.firstElementChild.innerText.trim() === 'Stambena površina u m2');
+
+									if (search) {
+										item = search.lastElementChild.innerText;
+										item = clearSize(item);
+									} else {
+										item = '-';
+									}
+								}
+
+								if (index === 4) {
+									const search = [...elements].find((inner) => inner.firstElementChild.innerText.trim() === 'Naselje');
+
+									if (search) {
+										item = search.lastElementChild.innerText;
+									} else {
+										item = '-';
+									}
+								}
+
+								break;
+						}
+
+						output.push(item);
+					} else {
+						output.push('-');
+					}
+				}
+			});
+
+			// Agency.
+			let seller = '';
+			switch (key) {
+				case 'njuskalo':
+					seller = doc.querySelector('.ClassifiedDetailOwnerDetails-title a')?.innerText;
+					output.push(`${name} - ${seller}`);
+					break;
+				case 'index':
+					seller = doc.querySelector('.oglasivac_info ul li a')?.innerText;
+					output.push(`${name} - ${seller}`);
+					break;
+				default:
+					output.push(name);
+					break;
+			}
+
+			// Url.
+			output.push(url);
+
+			let outputItem = '<tr>';
+			output.forEach((element, index) => {
+				outputItem += `<td>${element}</td>`;
+			});
+
+			outputItem += '</tr>';
+
+			return outputItem;
+		}
+
+		function getItem() {
+			form.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			const items = input.value.split(/\r?\n/);
+
+			[...items].forEach((url) => {
+				if (url) {
+					fetch(url.replace(' ', ''))
+						.then(function (response) {
+							return response.text();
+						})
+						.then(function (template) {
+							var parser = new DOMParser();
+							var doc = parser.parseFromString(template, "text/html");
+
+							const configItem = config.find((item) => url.includes(item.key));
+
+							if (configItem) {
+								output.insertAdjacentHTML('beforeend', getOutputItem(doc, url, configItem));
+							}
+						})
+						.catch(function (response) {
+							console.log(response);
+							console.log(response.statusText);
+						});
+					}
+				});
+			});
+		}
+	</script>
+</html>
